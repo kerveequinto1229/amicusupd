@@ -1,789 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <!-- Viewport Meta Tag: Essential for responsive behavior across devices -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bible Verse Game</title>
-    <!-- Tailwind CSS CDN: Provides utility-first classes for responsive design -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for icons (if any future use is desired) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5; /* Light gray base background */
-            /* Subtle floral background pattern using radial gradients */
-            background-image:
-                radial-gradient(circle at 10% 20%, rgba(224, 202, 255, 0.3) 0%, transparent 50%), /* Light lavender */
-                radial-gradient(circle at 90% 80%, rgba(200, 230, 255, 0.3) 0%, transparent 50%), /* Light blueish-purple */
-                radial-gradient(circle at 30% 70%, rgba(255, 220, 240, 0.3) 0%, transparent 50%), /* Light pink */
-                radial-gradient(circle at 70% 30%, rgba(230, 255, 220, 0.3) 0%, transparent 50%); /* Light greenish-yellow */
-            background-size: 200px 200px; /* Size of each repeating pattern unit */
-            background-repeat: repeat; /* Ensures the pattern repeats across the background */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh; /* Full viewport height */
-            margin: 0;
-            padding: 20px; /* Padding around the main container for smaller screens */
-            box-sizing: border-box;
-        }
-        /* Custom styles for select focus for better accessibility and visual feedback */
-        select:focus {
-            outline: none;
-            /* Changed focus ring color to a violet shade */
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.5); /* Corresponds to Tailwind violet-500 */
-        }
-        .hidden {
-            display: none;
-        }
-        /* Style for dynamically generated input blanks */
-        .verse-blank-input {
-            width: auto; /* Allow width to adjust */
-            min-width: 60px; /* Minimum width for each blank */
-            max-width: 150px; /* Maximum width for each blank */
-            padding: 4px 8px; /* Smaller padding for inline feel */
-            border: 1px solid #d1d5db; /* gray-300 */
-            border-radius: 0.375rem; /* rounded-md */
-            text-align: center;
-            background-color: #ffffff; /* white */
-            margin: 2px; /* Small margin between words */
-            display: inline-block; /* Allows inputs to flow like text */
-            box-sizing: border-box; /* Include padding/border in width */
-            font-size: 0.9rem; /* Slightly smaller font for inline inputs */
-        }
-        .verse-blank-input:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.5); /* purple-400 */
-        }
-        .verse-line {
-            display: flex;
-            flex-wrap: wrap; /* Allow words to wrap to next line */
-            justify-content: center; /* Center the words */
-            gap: 0.25rem; /* Small gap between words/inputs */
-            margin-bottom: 1rem; /* Space between lines if verse wraps */
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Bible Crossword</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f7f7f7;
+      margin: 0;
+    }
+
+    .title-img {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+    }
+
+    h1 {
+      margin-top: 0.5em;
+      font-size: 2em;
+    }
+
+    .puzzle {
+      display: grid;
+      grid-template-columns: repeat(13, 40px);
+      grid-template-rows: repeat(11, 40px);
+      justify-content: center;
+      margin: 2em auto;
+    }
+
+    .cell {
+      border: 1px solid #ccc;
+      width: 40px;
+      height: 40px;
+      box-sizing: border-box;
+      text-transform: uppercase;
+    }
+
+    .cell input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      text-align: center;
+      font-size: 1.2em;
+      background: white;
+    }
+
+    .cell.blocked {
+      background: #000;
+    }
+
+    .clues {
+      display: flex;
+      justify-content: space-around;
+      text-align: left;
+      padding: 0 2em;
+    }
+
+    .notif {
+      display: none;
+      margin-top: 1em;
+      font-size: 1.5em;
+      color: green;
+    }
+  </style>
 </head>
 <body>
-    <!-- Main container: responsive width and centering -->
-    <div class="main-container bg-white p-8 rounded-xl shadow-lg w-full max-w-lg md:max-w-xl lg:max-w-2xl">
-        <!-- Header Section with Logos and Text -->
-        <div class="header-section flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8 mb-8">
-            <!-- First Logo: WM Logo updated with new source and removed filter class -->
-            <img src="https://erimasdachurchs.wordpress.com/wp-content/uploads/2019/01/ministry_logo_vector_color_purple.jpg" alt="WM Logo" class="h-16 md:h-20">
-            
-            <!-- Header Text -->
-            <div class="text-center md:text-left">
-                <p class="text-xl md:text-2xl font-semibold text-gray-700">AMiCUS UP Diliman</p>
-                <h2 class="text-2xl md:text-3xl font-bold text-violet-700">Women's Ministries</h2>
-            </div>
-            
-            <!-- Second Logo: AMiCUS Logo -->
-            <img src="https://amicus2014.weebly.com/uploads/2/6/8/3/26831294/4897474_orig.png" alt="AMiCUS Logo" class="h-16 md:h-20">
-        </div>
 
-        <h1 class="text-3xl font-bold text-center text-violet-700 mb-6"></h1> 
-        <p class="text-center text-gray-600 mb-8">
-            Select a Bible book, chapter, and verse number. If you get it right, a message will appear!
-        </p>
+  <img src="https://amicus2014.weebly.com/uploads/2/6/8/3/26831294/4897474_orig.png" class="title-img" alt="Bible Crossword Banner">
+  <h1>Bible Crossword</h1>
 
-        <!-- Main Game Input Section -->
-        <div id="mainGameSection">
-            <div class="input-section grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <select id="bookSelect"
-                        class="p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-400 focus:border-transparent transition duration-200 ease-in-out text-gray-700">
-                    <option value="">Select Book</option>
-                </select>
-                <select id="chapterSelect"
-                        class="p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-400 focus:border-transparent transition duration-200 ease-in-out text-gray-700" disabled>
-                    <option value="">Select Chapter</option>
-                </select>
-                <select id="verseSelect"
-                        class="p-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-400 focus:border-transparent transition duration-200 ease-in-out text-gray-700" disabled>
-                    <option value="">Select Verse</option>
-                </select>
-            </div>
+  <div class="puzzle" id="puzzle"></div>
 
-            <button id="submitButton"
-                    class="w-full bg-violet-600 text-white p-3 rounded-lg font-semibold text-lg hover:bg-violet-700
-                           transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg
-                           focus:outline-none focus:ring-4 focus:ring-violet-300">
-                Submit Answer
-            </button>
-        </div>
-
-        <!-- Fill-in-the-Blanks Section for 2 Corinthians 3:17 (Initially Hidden) -->
-        <div id="twoCorinthiansBlanksSection" class="hidden text-center mt-8 p-6 bg-purple-50 rounded-xl shadow-inner">
-            <p class="text-lg text-gray-800 mb-4 font-semibold">Complete the verse for 2 Corinthians 3:17:</p>
-            <div id="twoCorinthiansVerseBlanksContainer" class="verse-line mb-6">
-                <!-- Dynamic input blanks will be inserted here -->
-            </div>
-            <button id="submitTwoCorinthiansBlanksButton"
-                    class="mt-4 bg-purple-600 text-white p-3 rounded-lg font-semibold text-lg hover:bg-purple-700
-                           transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg
-                           focus:outline-none focus:ring-4 focus:ring-purple-300">
-                Submit Blanks
-            </button>
-            <button id="backFromTwoCorinthiansButton"
-                    class="mt-4 ml-4 bg-gray-400 text-white p-3 rounded-lg font-semibold text-lg hover:bg-gray-500
-                           transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg
-                           focus:outline-none focus:ring-4 focus:ring-gray-300">
-                Back to Main Game
-            </button>
-        </div>
-
-        <!-- Fill-in-the-Blanks Section for Colossians 3:2 (Initially Hidden) -->
-        <div id="colossiansBlanksSection" class="hidden text-center mt-8 p-6 bg-purple-50 rounded-xl shadow-inner">
-            <p class="text-lg text-gray-800 mb-4 font-semibold">Complete the verse for Colossians 3:2:</p>
-            <div id="colossiansVerseBlanksContainer" class="verse-line mb-6">
-                <!-- Dynamic input blanks will be inserted here -->
-            </div>
-            <button id="submitColossiansBlanksButton"
-                    class="mt-4 bg-purple-600 text-white p-3 rounded-lg font-semibold text-lg hover:bg-purple-700
-                           transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg
-                           focus:outline-none focus:ring-4 focus:ring-purple-300">
-                Submit Blanks
-            </button>
-            <button id="backFromColossiansButton"
-                    class="mt-4 ml-4 bg-gray-400 text-white p-3 rounded-lg font-semibold text-lg hover:bg-gray-500
-                           transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg
-                           focus:outline-none focus:ring-4 focus:ring-gray-300">
-                Back to Main Game
-            </button>
-        </div>
-
-        <!-- Fill-in-the-Blanks Section for John 11:35 (Initially Hidden) -->
-        <div id="johnBlanksSection" class="hidden text-center mt-8 p-6 bg-purple-50 rounded-xl shadow-inner">
-            <p class="text-lg text-gray-800 mb-4 font-semibold">Complete the verse for John 11:35:</p>
-            <div id="johnVerseBlanksContainer" class="verse-line mb-6">
-                <!-- Dynamic input blanks will be inserted here -->
-            </div>
-            <button id="submitJohnBlanksButton"
-                    class="mt-4 bg-purple-600 text-white p-3 rounded-lg font-semibold text-lg hover:bg-purple-700
-                           transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg
-                           focus:outline-none focus:ring-4 focus:ring-purple-300">
-                Submit Blanks
-            </button>
-            <button id="backFromJohnButton"
-                    class="mt-4 ml-4 bg-gray-400 text-white p-3 rounded-lg font-semibold text-lg hover:bg-gray-500
-                           transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg
-                           focus:outline-none focus:ring-4 focus:ring-gray-300">
-                Back to Main Game
-            </button>
-        </div>
-
-        <!-- New Challenge Sections Start Here -->
-
-        <!-- Fill-in-the-Blanks Section for Psalms 51:10 -->
-        <div id="psalmsBlanksSection" class="hidden text-center mt-8 p-6 bg-purple-50 rounded-xl shadow-inner">
-            <p class="text-lg text-gray-800 mb-4 font-semibold">Complete the verse for Psalms 51:10:</p>
-            <div id="psalmsVerseBlanksContainer" class="verse-line mb-6"></div>
-            <button id="submitPsalmsBlanksButton" class="mt-4 bg-purple-600 text-white p-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-300">
-                Submit Blanks
-            </button>
-            <button id="backFromPsalmsButton" class="mt-4 ml-4 bg-gray-400 text-white p-3 rounded-lg font-semibold text-lg hover:bg-gray-500 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-300">
-                Back to Main Game
-            </button>
-        </div>
-
-        <!-- Fill-in-the-Blanks Section for Philippians 4:13 -->
-        <div id="philippiansBlanksSection" class="hidden text-center mt-8 p-6 bg-purple-50 rounded-xl shadow-inner">
-            <p class="text-lg text-gray-800 mb-4 font-semibold">Complete the verse for Philippians 4:13:</p>
-            <div id="philippiansVerseBlanksContainer" class="verse-line mb-6"></div>
-            <button id="submitPhilippiansBlanksButton" class="mt-4 bg-purple-600 text-white p-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-300">
-                Submit Blanks
-            </button>
-            <button id="backFromPhilippiansButton" class="mt-4 ml-4 bg-gray-400 text-white p-3 rounded-lg font-semibold text-lg hover:bg-gray-500 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-300">
-                Back to Main Game
-            </button>
-        </div>
-
-        <!-- Fill-in-the-Blanks Section for 2 Corinthians 10:4 -->
-        <div id="twoCorinthians10_4BlanksSection" class="hidden text-center mt-8 p-6 bg-purple-50 rounded-xl shadow-inner">
-            <p class="text-lg text-gray-800 mb-4 font-semibold">Complete the verse for 2 Corinthians 10:4:</p>
-            <div id="twoCorinthians10_4VerseBlanksContainer" class="verse-line mb-6"></div>
-            <button id="submitTwoCorinthians10_4BlanksButton" class="mt-4 bg-purple-600 text-white p-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-300">
-                Submit Blanks
-            </button>
-            <button id="backFromTwoCorinthians10_4Button" class="mt-4 ml-4 bg-gray-400 text-white p-3 rounded-lg font-semibold text-lg hover:bg-gray-500 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-300">
-                Back to Main Game
-            </button>
-        </div>
-
-        <!-- Fill-in-the-Blanks Section for Proverbs 3:7 -->
-        <div id="proverbsBlanksSection" class="hidden text-center mt-8 p-6 bg-purple-50 rounded-xl shadow-inner">
-            <p class="text-lg text-gray-800 mb-4 font-semibold">Complete the verse for Proverbs 3:7:</p>
-            <div id="proverbsVerseBlanksContainer" class="verse-line mb-6"></div>
-            <button id="submitProverbsBlanksButton" class="mt-4 bg-purple-600 text-white p-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-300">
-                Submit Blanks
-            </button>
-            <button id="backFromProverbsButton" class="mt-4 ml-4 bg-gray-400 text-white p-3 rounded-lg font-semibold text-lg hover:bg-gray-500 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-300">
-                Back to Main Game
-            </button>
-        </div>
-
-        <!-- Fill-in-the-Blanks Section for Matthew 7:24 -->
-        <div id="matthewBlanksSection" class="hidden text-center mt-8 p-6 bg-purple-50 rounded-xl shadow-inner">
-            <p class="text-lg text-gray-800 mb-4 font-semibold">Complete the verse for Matthew 7:24:</p>
-            <div id="matthewVerseBlanksContainer" class="verse-line mb-6"></div>
-            <button id="submitMatthewBlanksButton" class="mt-4 bg-purple-600 text-white p-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-300">
-                Submit Blanks
-            </button>
-            <button id="backFromMatthewButton" class="mt-4 ml-4 bg-gray-400 text-white p-3 rounded-lg font-semibold text-lg hover:bg-gray-500 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-300">
-                Back to Main Game
-            </button>
-        </div>
-
-        <!-- Fill-in-the-Blanks Section for Luke 6:31 -->
-        <div id="lukeBlanksSection" class="hidden text-center mt-8 p-6 bg-purple-50 rounded-xl shadow-inner">
-            <p class="text-lg text-gray-800 mb-4 font-semibold">Complete the verse for Luke 6:31:</p>
-            <div id="lukeVerseBlanksContainer" class="verse-line mb-6"></div>
-            <button id="submitLukeBlanksButton" class="mt-4 bg-purple-600 text-white p-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-300">
-                Submit Blanks
-            </button>
-            <button id="backFromLukeButton" class="mt-4 ml-4 bg-gray-400 text-white p-3 rounded-lg font-semibold text-lg hover:bg-gray-500 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-300">
-                Back to Main Game
-            </button>
-        </div>
-
-        <!-- Fill-in-the-Blanks Section for Ephesians 4:32 -->
-        <div id="ephesiansBlanksSection" class="hidden text-center mt-8 p-6 bg-purple-50 rounded-xl shadow-inner">
-            <p class="text-lg text-gray-800 mb-4 font-semibold">Complete the verse for Ephesians 4:32:</p>
-            <div id="ephesiansVerseBlanksContainer" class="verse-line mb-6"></div>
-            <button id="submitEphesiansBlanksButton" class="mt-4 bg-purple-600 text-white p-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-300">
-                Submit Blanks
-            </button>
-            <button id="backFromEphesiansButton" class="mt-4 ml-4 bg-gray-400 text-white p-3 rounded-lg font-semibold text-lg hover:bg-gray-500 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-300">
-                Back to Main Game
-            </button>
-        </div>
-
-        <!-- Fill-in-the-Blanks Section for Hebrews 11:1 -->
-        <div id="hebrewsBlanksSection" class="hidden text-center mt-8 p-6 bg-purple-50 rounded-xl shadow-inner">
-            <p class="text-lg text-gray-800 mb-4 font-semibold">Complete the verse for Hebrews 11:1:</p>
-            <div id="hebrewsVerseBlanksContainer" class="verse-line mb-6"></div>
-            <button id="submitHebrewsBlanksButton" class="mt-4 bg-purple-600 text-white p-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-300">
-                Submit Blanks
-            </button>
-            <button id="backFromHebrewsButton" class="mt-4 ml-4 bg-gray-400 text-white p-3 rounded-lg font-semibold text-lg hover:bg-gray-500 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-300">
-                Back to Main Game
-            </button>
-        </div>
-
-        <!-- Fill-in-the-Blanks Section for John 3:16 -->
-        <div id="john3_16BlanksSection" class="hidden text-center mt-8 p-6 bg-purple-50 rounded-xl shadow-inner">
-            <p class="text-lg text-gray-800 mb-4 font-semibold">Complete the verse for John 3:16:</p>
-            <div id="john3_16VerseBlanksContainer" class="verse-line mb-6"></div>
-            <button id="submitJohn3_16BlanksButton" class="mt-4 bg-purple-600 text-white p-3 rounded-lg font-semibold text-lg hover:bg-purple-700 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-purple-300">
-                Submit Blanks
-            </button>
-            <button id="backFromJohn3_16Button" class="mt-4 ml-4 bg-gray-400 text-white p-3 rounded-lg font-semibold text-lg hover:bg-gray-500 transition duration-300 ease-in-out transform hover:scale-105 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-300">
-                Back to Main Game
-            </button>
-        </div>
-        
-        <!-- Message Display Area (common for both sections) -->
-        <div id="messageDisplay" class="mt-6 text-center text-lg font-medium">
-            <!-- Messages will be displayed here -->
-        </div>
+  <div class="clues">
+    <div>
+      <h3>ACROSS</h3>
+      <p>1. The good news of salvation through Christ</p>
+      <p>5. Eternal rescue offered to believers</p>
+      <p>7. Trust in God’s promises</p>
+      <p>9. Fearless declaration of faith</p>
+      <p>10. God's dynamic force behind salvation</p>
     </div>
+    <div>
+      <h3>DOWN</h3>
+      <p>2. Spreading the message of Christ</p>
+      <p>3. Strength to stand for Christ</p>
+      <p>4. Unchanging standard of God’s word</p>
+      <p>6. One who testifies to the gospel</p>
+      <p>8. Mental and spiritual acceptance of truth</p>
+    </div>
+  </div>
 
-    <script>
-        // Define the list of correct Bible verses for the puzzle
-        const correctVerses = [
-            "Romans 1:16", "Titus 2:11", "John 3:16", "Philippians 4:13", "Galatians 5:22", "Luke 6:31",
-            "Matthew 7:24", "Romans 8:28", "Matthew 9:13", "Romans 10:17", "Hebrews 11:1", "Romans 12:21",
-            "2 Corinthians 3:17", "2 Timothy 1:7", "Proverbs 3:7", "Ephesians 2:8", 
-            "Isaiah 40:31", "James 4:17", "Psalms 95:2", "Philippians 2:13", "Proverbs 2:6",
-            "1 Corinthians 13:4", "1 Corinthians 10:31", "2 Corinthians 10:4", "Colossians 3:2",
-            "Hebrews 13:16", "1 John 5:4", "1 Thessalonians 5:18", "Romans 10:9", "Ephesians 4:32",
-            "Proverbs 18:10", "Romans 11:36", "1 Chronicles 16:11", "Psalms 51:10", "Proverbs 10:12",
-            "John 11:35" 
-        ];
+  <div class="notif" id="notif">✅ Puzzle complete! Show to Cat 😸</div>
 
-        // Comprehensive map of all 66 Bible books and their chapter counts in canonical order.
-        // All specific verse counts for individual chapters have been removed,
-        // relying on the default maxVerses = 100 for all chapters.
-        const bibleData = {
-            // Old Testament
-            "Genesis": { chapters: 50, verses: {} },
-            "Exodus": { chapters: 40, verses: {} },
-            "Leviticus": { chapters: 27, verses: {} },
-            "Numbers": { chapters: 36, verses: {} },
-            "Deuteronomy": { chapters: 34, verses: {} },
-            "Joshua": { chapters: 24, verses: {} },
-            "Judges": { chapters: 21, verses: {} },
-            "Ruth": { chapters: 4, verses: {} },
-            "1 Samuel": { chapters: 31, verses: {} },
-            "2 Samuel": { chapters: 24, verses: {} },
-            "1 Kings": { chapters: 22, verses: {} },
-            "2 Kings": { chapters: 25, verses: {} },
-            "1 Chronicles": { chapters: 29, verses: {} }, 
-            "2 Chronicles": { chapters: 36, verses: {} },
-            "Ezra": { chapters: 10, verses: {} },
-            "Nehemiah": { chapters: 13, verses: {} },
-            "Esther": { chapters: 10, verses: {} },
-            "Job": { chapters: 42, verses: {} },
-            "Psalms": { chapters: 150, verses: {} }, 
-            "Proverbs": { chapters: 31, verses: {} }, 
-            "Ecclesiastes": { chapters: 12, verses: {} },
-            "Song of Solomon": { chapters: 8, verses: {} },
-            "Isaiah": { chapters: 66, verses: {} }, 
-            "Jeremiah": { chapters: 52, verses: {} },
-            "Lamentations": { chapters: 5, verses: {} },
-            "Ezekiel": { chapters: 48, verses: {} },
-            "Daniel": { chapters: 12, verses: {} },
-            "Hosea": { chapters: 14, verses: {} },
-            "Joel": { chapters: 3, verses: {} },
-            "Amos": { chapters: 9, verses: {} },
-            "Obadiah": { chapters: 1, verses: {} },
-            "Jonah": { chapters: 4, verses: {} },
-            "Micah": { chapters: 7, verses: {} },
-            "Nahum": { chapters: 3, verses: {} },
-            "Habakkuk": { chapters: 3, verses: {} },
-            "Zephaniah": { chapters: 3, verses: {} },
-            "Haggai": { chapters: 2, verses: {} },
-            "Zechariah": { chapters: 14, verses: {} },
-            "Malachi": { chapters: 4, verses: {} },
+  <script>
+    const answers = {
+      "1-across": "GOSPEL",
+      "2-down": "EVANGELISM",
+      "3-down": "COURAGE",
+      "4-down": "BIBLE",
+      "5-across": "SALVATION",
+      "6-down": "WITNESS",
+      "7-across": "FAITH",
+      "8-down": "BELIEF",
+      "9-across": "BOLDNESS",
+      "10-across": "POWER"
+    };
 
-            // New Testament
-            "Matthew": { chapters: 28, verses: {} }, 
-            "Mark": { chapters: 16, verses: {} },
-            "Luke": { chapters: 24, verses: {} }, 
-            "John": { chapters: 21, verses: {} }, 
-            "Acts": { chapters: 28, verses: {} },
-            "Romans": { chapters: 16, verses: {} }, 
-            "1 Corinthians": { chapters: 16, verses: {} }, 
-            "2 Corinthians": { chapters: 13, verses: {} }, 
-            "Galatians": { chapters: 6, verses: {} }, 
-            "Ephesians": { chapters: 6, verses: {} }, 
-            "Philippians": { chapters: 4, verses: {} }, 
-            "Colossians": { chapters: 4, verses: {} }, 
-            "1 Thessalonians": { chapters: 5, verses: {} }, 
-            "2 Thessalonians": { chapters: 3, verses: {} },
-            "1 Timothy": { chapters: 6, verses: {} },
-            "2 Timothy": { chapters: 4, verses: {} }, 
-            "Titus": { chapters: 3, verses: {} }, 
-            "Philemon": { chapters: 1, verses: {} },
-            "Hebrews": { chapters: 13, verses: {} }, 
-            "James": { chapters: 5, verses: {} }, 
-            "1 Peter": { chapters: 5, verses: {} },
-            "2 Peter": { chapters: 3, verses: {} },
-            "1 John": { chapters: 5, verses: {} }, 
-            "2 John": { chapters: 1, verses: {} },
-            "3 John": { chapters: 1, verses: {} },
-            "Jude": { chapters: 1, verses: {} },
-            "Revelation": { chapters: 22, verses: {} }
-        };
+    const grid = [
+      [ "G", "O", "S", "P", "E", "L", "", "", "", "", "", "", ""],
+      [ "", "", "", "V", "", "", "", "", "", "", "", "", ""],
+      [ "", "", "", "A", "", "", "", "", "", "", "", "", ""],
+      [ "", "", "", "N", "", "S", "A", "L", "V", "A", "T", "I", "O"],
+      [ "", "C", "", "G", "", "", "", "", "", "", "", "", "N"],
+      [ "", "O", "", "E", "", "", "", "", "", "", "", "", ""],
+      [ "F", "A", "I", "T", "H", "", "", "", "", "", "", "", ""],
+      [ "", "U", "", "L", "", "", "", "", "", "", "", "", ""],
+      [ "B", "O", "L", "D", "N", "E", "S", "S", "", "", "", "", ""],
+      [ "", "E", "", "", "", "", "", "", "", "", "", "", ""],
+      [ "P", "O", "W", "E", "R", "", "", "", "", "", "", "", ""],
+    ];
 
-        // Store revealed verses to avoid re-revealing
-        const revealedVerses = new Set();
-        // Flags for challenge completion for each specific verse
-        let twoCorinthiansChallengeCompleted = false;
-        let colossiansChallengeCompleted = false;
-        let johnChallengeCompleted = false;
-        let psalmsChallengeCompleted = false; // New
-        let philippiansChallengeCompleted = false; // New
-        let twoCorinthians10_4ChallengeCompleted = false; // New
-        let proverbsChallengeCompleted = false; // New
-        let matthewChallengeCompleted = false; // New
-        let lukeChallengeCompleted = false; // New
-        let ephesiansChallengeCompleted = false; // New
-        let hebrewsChallengeCompleted = false; // New
-        let john3_16ChallengeCompleted = false; // New
+    const solution = [
+      ["G","O","S","P","E","L",null,null,null,null,null,null,null],
+      [null,null,null,"V",null,null,null,null,null,null,null,null,null],
+      [null,null,null,"A",null,null,null,null,null,null,null,null,null],
+      [null,null,null,"N",null,"S","A","L","V","A","T","I","O"],
+      [null,"C",null,"G",null,null,null,null,null,null,null,null,"N"],
+      [null,"O",null,"E",null,null,null,null,null,null,null,null,null],
+      ["F","A","I","T","H",null,null,null,null,null,null,null,null],
+      [null,"U",null,"L",null,null,null,null,null,null,null,null,null],
+      ["B","O","L","D","N","E","S","S",null,null,null,null,null],
+      [null,"E",null,null,null,null,null,null,null,null,null,null,null],
+      ["P","O","W","E","R",null,null,null,null,null,null,null,null],
+    ];
 
-        // Correct verse text and words for each challenge
-        const twoCorinthiansVerseText = "Now the Lord is the Spirit, and where the Spirit of the Lord is, there is freedom.";
-        const twoCorinthiansCorrectWords = twoCorinthiansVerseText.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/);
+    const puzzle = document.getElementById('puzzle');
+    const notif = document.getElementById('notif');
 
-        const colossiansVerseText = "Set your minds on things that are above, not on things that are on earth.";
-        const colossiansCorrectWords = colossiansVerseText.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/);
-
-        const johnVerseText = "Jesus wept.";
-        const johnCorrectWords = johnVerseText.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/);
-
-        const psalmsVerseText = "Create in me a clean heart, O God, and renew a right spirit within me.";
-        const psalmsCorrectWords = psalmsVerseText.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/);
-
-        const philippiansVerseText = "I can do all things through him who strengthens me.";
-        const philippiansCorrectWords = philippiansVerseText.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/);
-
-        const twoCorinthians10_4VerseText = "For the weapons of our warfare are not of the flesh but have divine power to destroy strongholds.";
-        const twoCorinthians10_4CorrectWords = twoCorinthians10_4VerseText.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/);
-
-        const proverbsVerseText = "Be not wise in your own eyes; fear the Lord, and turn away from evil.";
-        const proverbsCorrectWords = proverbsVerseText.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/);
-
-        const matthewVerseText = "Everyone then who hears these words of mine and does them will be like a wise man who built his house on the rock.";
-        const matthewCorrectWords = matthewVerseText.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/);
-
-        const lukeVerseText = "And as you wish that others would do to you, do so to them.";
-        const lukeCorrectWords = lukeVerseText.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/);
-
-        const ephesiansVerseText = "Be kind to one another, tenderhearted, forgiving one another, as God in Christ forgave you.";
-        const ephesiansCorrectWords = ephesiansVerseText.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/);
-
-        const hebrewsVerseText = "Now faith is the assurance of things hoped for, the conviction of things not seen.";
-        const hebrewsCorrectWords = hebrewsVerseText.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/);
-
-        const john3_16VerseText = "For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life.";
-        const john3_16CorrectWords = john3_16VerseText.toLowerCase().replace(/[.,!?;:]/g, '').split(/\s+/);
-
-
-        // Get DOM elements
-        const bookSelect = document.getElementById('bookSelect');
-        const chapterSelect = document.getElementById('chapterSelect');
-        const verseSelect = document.getElementById('verseSelect');
-        const submitButton = document.getElementById('submitButton');
-        const messageDisplay = document.getElementById('messageDisplay');
-        const mainGameSection = document.getElementById('mainGameSection');
-
-        // All challenge sections and their buttons/containers
-        const challengeSections = {
-            "2 Corinthians 3:17": {
-                section: document.getElementById('twoCorinthiansBlanksSection'),
-                container: document.getElementById('twoCorinthiansVerseBlanksContainer'),
-                submitButton: document.getElementById('submitTwoCorinthiansBlanksButton'),
-                backButton: document.getElementById('backFromTwoCorinthiansButton'),
-                verseText: twoCorinthiansVerseText,
-                correctWords: twoCorinthiansCorrectWords,
-                isCompleted: () => twoCorinthiansChallengeCompleted,
-                setCompleted: (val) => twoCorinthiansChallengeCompleted = val
-            },
-            "Colossians 3:2": {
-                section: document.getElementById('colossiansBlanksSection'),
-                container: document.getElementById('colossiansVerseBlanksContainer'),
-                submitButton: document.getElementById('submitColossiansBlanksButton'),
-                backButton: document.getElementById('backFromColossiansButton'),
-                verseText: colossiansVerseText,
-                correctWords: colossiansCorrectWords,
-                isCompleted: () => colossiansChallengeCompleted,
-                setCompleted: (val) => colossiansChallengeCompleted = val
-            },
-            "John 11:35": {
-                section: document.getElementById('johnBlanksSection'),
-                container: document.getElementById('johnVerseBlanksContainer'),
-                submitButton: document.getElementById('submitJohnBlanksButton'),
-                backButton: document.getElementById('backFromJohnButton'),
-                verseText: johnVerseText,
-                correctWords: johnCorrectWords,
-                isCompleted: () => johnChallengeCompleted,
-                setCompleted: (val) => johnChallengeCompleted = val
-            },
-            "Psalms 51:10": { // New
-                section: document.getElementById('psalmsBlanksSection'),
-                container: document.getElementById('psalmsVerseBlanksContainer'),
-                submitButton: document.getElementById('submitPsalmsBlanksButton'),
-                backButton: document.getElementById('backFromPsalmsButton'),
-                verseText: psalmsVerseText,
-                correctWords: psalmsCorrectWords,
-                isCompleted: () => psalmsChallengeCompleted,
-                setCompleted: (val) => psalmsChallengeCompleted = val
-            },
-            "Philippians 4:13": { // New
-                section: document.getElementById('philippiansBlanksSection'),
-                container: document.getElementById('philippiansVerseBlanksContainer'),
-                submitButton: document.getElementById('submitPhilippiansBlanksButton'),
-                backButton: document.getElementById('backFromPhilippiansButton'),
-                verseText: philippiansVerseText,
-                correctWords: philippiansCorrectWords,
-                isCompleted: () => philippiansChallengeCompleted,
-                setCompleted: (val) => philippiansChallengeCompleted = val
-            },
-            "2 Corinthians 10:4": { // New
-                section: document.getElementById('twoCorinthians10_4BlanksSection'),
-                container: document.getElementById('twoCorinthians10_4VerseBlanksContainer'),
-                submitButton: document.getElementById('submitTwoCorinthians10_4BlanksButton'),
-                backButton: document.getElementById('backFromTwoCorinthians10_4Button'),
-                verseText: twoCorinthians10_4VerseText,
-                correctWords: twoCorinthians10_4CorrectWords,
-                isCompleted: () => twoCorinthians10_4ChallengeCompleted,
-                setCompleted: (val) => twoCorinthians10_4ChallengeCompleted = val
-            },
-            "Proverbs 3:7": { // New
-                section: document.getElementById('proverbsBlanksSection'),
-                container: document.getElementById('proverbsVerseBlanksContainer'),
-                submitButton: document.getElementById('submitProverbsBlanksButton'),
-                backButton: document.getElementById('backFromProverbsButton'),
-                verseText: proverbsVerseText,
-                correctWords: proverbsCorrectWords,
-                isCompleted: () => proverbsChallengeCompleted,
-                setCompleted: (val) => proverbsChallengeCompleted = val
-            },
-            "Matthew 7:24": { // New
-                section: document.getElementById('matthewBlanksSection'),
-                container: document.getElementById('matthewVerseBlanksContainer'),
-                submitButton: document.getElementById('submitMatthewBlanksButton'),
-                backButton: document.getElementById('backFromMatthewButton'),
-                verseText: matthewVerseText,
-                correctWords: matthewCorrectWords,
-                isCompleted: () => matthewChallengeCompleted,
-                setCompleted: (val) => matthewChallengeCompleted = val
-            },
-            "Luke 6:31": { // New
-                section: document.getElementById('lukeBlanksSection'),
-                container: document.getElementById('lukeVerseBlanksContainer'),
-                submitButton: document.getElementById('submitLukeBlanksButton'),
-                backButton: document.getElementById('backFromLukeButton'),
-                verseText: lukeVerseText,
-                correctWords: lukeCorrectWords,
-                isCompleted: () => lukeChallengeCompleted,
-                setCompleted: (val) => lukeChallengeCompleted = val
-            },
-            "Ephesians 4:32": { // New
-                section: document.getElementById('ephesiansBlanksSection'),
-                container: document.getElementById('ephesiansVerseBlanksContainer'),
-                submitButton: document.getElementById('submitEphesiansBlanksButton'),
-                backButton: document.getElementById('backFromEphesiansButton'),
-                verseText: ephesiansVerseText,
-                correctWords: ephesiansCorrectWords,
-                isCompleted: () => ephesiansChallengeCompleted,
-                setCompleted: (val) => ephesiansChallengeCompleted = val
-            },
-            "Hebrews 11:1": { // New
-                section: document.getElementById('hebrewsBlanksSection'),
-                container: document.getElementById('hebrewsVerseBlanksContainer'),
-                submitButton: document.getElementById('submitHebrewsBlanksButton'),
-                backButton: document.getElementById('backFromHebrewsButton'),
-                verseText: hebrewsVerseText,
-                correctWords: hebrewsCorrectWords,
-                isCompleted: () => hebrewsChallengeCompleted,
-                setCompleted: (val) => hebrewsChallengeCompleted = val
-            },
-            "John 3:16": { // New
-                section: document.getElementById('john3_16BlanksSection'),
-                container: document.getElementById('john3_16VerseBlanksContainer'),
-                submitButton: document.getElementById('submitJohn3_16BlanksButton'),
-                backButton: document.getElementById('backFromJohn3_16Button'),
-                verseText: john3_16VerseText,
-                correctWords: john3_16CorrectWords,
-                isCompleted: () => john3_16ChallengeCompleted,
-                setCompleted: (val) => john3_16ChallengeCompleted = val
-            }
-        };
-
-        /**
-         * Populates the book dropdown with options from bibleData.
-         */
-        function populateBooks() {
-            bookSelect.innerHTML = '<option value="">Select Book</option>';
-            Object.keys(bibleData).forEach(book => {
-                const option = document.createElement('option');
-                option.value = book;
-                option.textContent = book;
-                bookSelect.appendChild(option);
-            });
-            chapterSelect.disabled = true;
-            verseSelect.disabled = true;
-            chapterSelect.innerHTML = '<option value="">Select Chapter</option>';
-            verseSelect.innerHTML = '<option value="">Select Verse</option>';
+    for (let row = 0; row < grid.length; row++) {
+      for (let col = 0; col < grid[row].length; col++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        if (solution[row][col] == null) {
+          cell.classList.add('blocked');
+        } else {
+          const input = document.createElement('input');
+          input.maxLength = 1;
+          input.dataset.row = row;
+          input.dataset.col = col;
+          input.addEventListener('input', checkAnswer);
+          cell.appendChild(input);
         }
+        puzzle.appendChild(cell);
+      }
+    }
 
-        /**
-         * Populates the chapter dropdown based on the selected book.
-         */
-        function populateChapters() {
-            const selectedBook = bookSelect.value;
-            chapterSelect.innerHTML = '<option value="">Select Chapter</option>';
-            verseSelect.innerHTML = '<option value="">Select Verse</option>';
-            verseSelect.disabled = true;
-
-            if (selectedBook && bibleData[selectedBook]) {
-                const numChapters = bibleData[selectedBook].chapters;
-                for (let i = 1; i <= numChapters; i++) {
-                    const option = document.createElement('option');
-                    option.value = i;
-                    option.textContent = i;
-                    chapterSelect.appendChild(option);
-                }
-                chapterSelect.disabled = false;
-            } else {
-                chapterSelect.disabled = true;
-            }
+    function checkAnswer() {
+      let correct = true;
+      document.querySelectorAll('input').forEach(input => {
+        const row = input.dataset.row;
+        const col = input.dataset.col;
+        const expected = solution[row][col];
+        if (input.value.toUpperCase() !== expected) {
+          correct = false;
         }
+      });
+      if (correct) {
+        notif.style.display = 'block';
+      } else {
+        notif.style.display = 'none';
+      }
+    }
+  </script>
 
-        /**
-         * Populates the verse dropdown based on the selected book and chapter.
-         */
-        function populateVerses() {
-            const selectedBook = bookSelect.value;
-            const selectedChapter = parseInt(chapterSelect.value);
-            verseSelect.innerHTML = '<option value="">Select Verse</option>';
-
-            if (selectedBook && selectedChapter && bibleData[selectedBook]) {
-                const maxVerses = bibleData[selectedBook].verses[selectedChapter] || 100;
-                for (let i = 1; i <= maxVerses; i++) {
-                    const option = document.createElement('option');
-                    option.value = i;
-                    option.textContent = i;
-                    verseSelect.appendChild(option);
-                }
-                verseSelect.disabled = false;
-            } else {
-                    verseSelect.disabled = true;
-            }
-        }
-
-        /**
-         * Hides all challenge sections.
-         */
-        function hideAllChallengeSections() {
-            Object.values(challengeSections).forEach(challenge => {
-                challenge.section.classList.add('hidden');
-            });
-        }
-
-        /**
-         * Handles the submission of the Bible verse.
-         * Validates input and shows a message or a fill-in-the-blanks challenge if correct.
-         */
-        async function handleSubmit() {
-            const book = bookSelect.value;
-            const chapter = chapterSelect.value;
-            const verse = verseSelect.value;
-
-            if (!book || !chapter || !verse) {
-                messageDisplay.textContent = "Please select a book, chapter, and verse.";
-                messageDisplay.className = "mt-6 text-center text-lg font-medium text-red-600";
-                return;
-            }
-
-            const submittedVerse = `${book} ${chapter}:${verse}`;
-
-            if (correctVerses.includes(submittedVerse)) {
-                const challenge = challengeSections[submittedVerse];
-                
-                if (challenge && !challenge.isCompleted()) {
-                    mainGameSection.classList.add('hidden'); // Hide main game section
-                    hideAllChallengeSections(); // Hide any other active challenge
-                    
-                    challenge.section.classList.remove('hidden'); // Show current challenge
-                    messageDisplay.textContent = `Correct! You found "${submittedVerse}" 🌸! Now, complete the verse!`;
-                    messageDisplay.className = "mt-6 text-center text-lg font-medium text-green-600";
-                    populateBlanks(challenge.verseText, challenge.container); // Populate blanks for this challenge
-                } else {
-                    // Normal correct message if no special challenge or challenge already completed
-                    messageDisplay.textContent = `Correct! You found "${submittedVerse}" 🌸!`;
-                    messageDisplay.className = "mt-6 text-center text-lg font-medium text-green-600";
-                    mainGameSection.classList.remove('hidden'); // Ensure main game is visible if no challenge
-                    hideAllChallengeSections(); // Hide any challenge section that might have been visible
-                }
-                revealedVerses.add(submittedVerse); 
-            } else {
-                messageDisplay.textContent = `Incorrect. Try again!`;
-                messageDisplay.className = "mt-6 text-center text-lg font-medium text-red-600";
-                mainGameSection.classList.remove('hidden'); // Ensure main game is visible if incorrect
-                hideAllChallengeSections(); // Hide any challenge section that might have been visible
-            }
-
-            messageDisplay.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-
-        /**
-         * Dynamically populates the fill-in-the-blanks inputs for a given verse.
-         * @param {string} verseText - The full text of the verse.
-         * @param {HTMLElement} container - The container element for the blanks.
-         */
-        function populateBlanks(verseText, container) {
-            container.innerHTML = ''; // Clear any existing blanks
-            // Split by space to get words (keeping punctuation for now for input creation)
-            const words = verseText.split(/\s+/); 
-
-            words.forEach((word, index) => {
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.className = 'verse-blank-input';
-                input.dataset.index = index; // Store original index for checking
-                input.placeholder = '____'; // Placeholder for the blank
-
-                container.appendChild(input);
-
-                // Add a non-breaking space for visual separation, but not after the last word
-                if (index < words.length - 1) { 
-                    const space = document.createElement('span');
-                    space.innerHTML = '&nbsp;'; // Use &nbsp; for non-breaking space
-                    container.appendChild(space);
-                }
-            });
-            // Focus on the first input
-            if (container.firstElementChild) {
-                container.firstElementChild.focus();
-            }
-        }
-
-        /**
-         * Generic function to handle the submission and checking of fill-in-the-blanks challenges.
-         * @param {Array<string>} correctWordsArray - The array of correct, cleaned words for comparison.
-         * @param {HTMLElement} container - The container element holding the blanks.
-         * @param {function} setChallengeCompleted - Function to set the challenge completion flag.
-         */
-        function checkGenericBlanks(correctWordsArray, container, setChallengeCompleted) {
-            const inputs = container.querySelectorAll('input.verse-blank-input');
-            let allCorrect = true;
-
-            inputs.forEach((input, index) => {
-                // Ensure correctWordsArray[index] exists to prevent errors for short inputs
-                const correctWordClean = (correctWordsArray[index] || '').toLowerCase(); 
-                const enteredWordClean = input.value.trim().toLowerCase();
-
-                if (enteredWordClean !== correctWordClean) {
-                    allCorrect = false;
-                    input.style.borderColor = 'red'; // Highlight incorrect blanks
-                } else {
-                    input.style.borderColor = 'green'; // Highlight correct blanks in green
-                }
-            });
-
-            if (allCorrect) {
-                messageDisplay.textContent = "NOW SHOW TO KERVEE!";
-                messageDisplay.className = "mt-6 text-center text-2xl font-bold text-red-600 animate-pulse";
-                setChallengeCompleted(true); // Mark challenge as completed
-            } else {
-                messageDisplay.textContent = "Incorrect. Some words are wrong. Please try again!";
-                messageDisplay.className = "mt-6 text-center text-lg font-medium text-red-600";
-            }
-            messageDisplay.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-
-        /**
-         * Navigates back to the main game section, hiding all challenge sections.
-         */
-        function goBackToMainGame() {
-            hideAllChallengeSections(); // Hide all challenge sections
-            mainGameSection.classList.remove('hidden'); // Show main game section
-            messageDisplay.textContent = "Select a verse to start!"; // Reset message
-            messageDisplay.className = "mt-6 text-center text-lg font-medium text-gray-500";
-            // Clear inputs and reset border colors in all challenge sections
-            Object.values(challengeSections).forEach(challenge => {
-                challenge.container.querySelectorAll('input').forEach(input => {
-                    input.value = '';
-                    input.style.borderColor = '#d1d5db'; // Reset to default gray
-                });
-            });
-        }
-
-
-        // Add event listeners
-        bookSelect.addEventListener('change', populateChapters);
-        chapterSelect.addEventListener('change', populateVerses);
-        submitButton.addEventListener('click', handleSubmit);
-        
-        // Add event listeners for all challenge submit and back buttons dynamically
-        Object.values(challengeSections).forEach(challenge => {
-            challenge.submitButton.addEventListener('click', () => {
-                checkGenericBlanks(challenge.correctWords, challenge.container, challenge.setCompleted);
-            });
-            challenge.backButton.addEventListener('click', goBackToMainGame);
-        });
-
-        // Initialize on window load
-        window.onload = () => {
-            populateBooks(); // Populate the book dropdown initially
-            messageDisplay.textContent = "Select a verse to start!";
-            messageDisplay.className = "mt-6 text-center text-lg font-medium text-gray-500";
-        };
-    </script>
 </body>
 </html>
